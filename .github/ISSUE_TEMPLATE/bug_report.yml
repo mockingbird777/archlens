@@ -1,0 +1,57 @@
+name: Bug report
+description: Report incorrect analysis, a crash, or a report problem.
+title: "[Bug]: "
+labels: [bug, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to improve ArchLens. Please remove proprietary details from reproductions.
+  - type: input
+    id: version
+    attributes:
+      label: ArchLens version
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: input
+    id: node
+    attributes:
+      label: Node.js version and operating system
+      placeholder: "Node 22.14.0, macOS 15"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [Scanner and ignores, JavaScript or TypeScript, Python, Go, Cycle or hotspot analysis, HTML report, JSON or Mermaid, CLI, Other]
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Include the command, smallest relevant source tree, and import statements.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched existing issues.
+          required: true
+        - label: This report contains no confidential source or paths.
+          required: true

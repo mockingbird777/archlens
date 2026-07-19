@@ -1,0 +1,37 @@
+name: Feature request
+description: Propose a focused capability or language/resolver improvement.
+title: "[Feature]: "
+labels: [enhancement, needs-triage]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What repository-intelligence workflow is difficult today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe expected CLI, API, or report behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: textarea
+    id: examples
+    attributes:
+      label: Example input and output
+      description: Synthetic or public examples only.
+  - type: checkboxes
+    id: principles
+    attributes:
+      label: Project fit
+      options:
+        - label: The proposal can preserve local-first operation.
+          required: true
+        - label: I searched existing issues and the roadmap.
+          required: true

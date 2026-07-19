@@ -1,0 +1,59 @@
+{
+  "name": "archlens",
+  "version": "0.1.0",
+  "description": "Local-first repository intelligence graphs from your terminal.",
+  "type": "module",
+  "bin": {
+    "archlens": "bin/archlens.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "assets",
+    "bin",
+    "dist",
+    "!dist/test",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test dist/test/*.test.js",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "start": "node bin/archlens.js",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test"
+  },
+  "keywords": [
+    "architecture",
+    "dependency-graph",
+    "static-analysis",
+    "code-visualization",
+    "circular-dependencies",
+    "developer-tools",
+    "local-first"
+  ],
+  "author": "ArchLens Contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mockingbird777/archlens.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mockingbird777/archlens/issues"
+  },
+  "homepage": "https://github.com/mockingbird777/archlens#readme",
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.30",
+    "typescript": "^5.8.3"
+  }
+}

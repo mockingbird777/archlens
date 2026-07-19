@@ -1,0 +1,16 @@
+{
+  "description": "Local-first repository intelligence graphs: dependencies, cycles, and hotspots in one zero-runtime-dependency CLI.",
+  "homepage": "https://mockingbird777.github.io/archlens/",
+  "topics": [
+    "dependency-graph",
+    "static-analysis",
+    "architecture",
+    "code-visualization",
+    "circular-dependencies",
+    "typescript",
+    "python",
+    "golang",
+    "developer-tools",
+    "local-first"
+  ]
+}

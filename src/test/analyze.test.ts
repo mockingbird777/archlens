@@ -49,3 +49,15 @@ test('reporters create portable, useful output', async () => {
   assert.match(mermaid, /flowchart LR/);
   assert.match(mermaid, /src\/a\.ts/);
 });
+
+test('hotspot and cycle rows render as keyboard-operable buttons', async () => {
+  const result = await analyzeRepository({ root: fixture });
+  const html = renderHtml(result, 'Fixture');
+  // Rows are native buttons (click = Enter/Space for keyboards) with an
+  // accessible name carrying the path + score, or the cycle size.
+  assert.match(html, /<button type="button" class="row" data-node="'\+escapeText\(h\.id\)\+'" aria-label="Select hotspot '\+escapeText\(h\.id\)\+', score '\+escapeText\(h\.score\)\+'"/);
+  assert.match(html, /<button type="button" class="row" data-node="'\+escapeText\(c\.nodes\[0\]\|\|''\)\+'" aria-label="Select cycle of '\+escapeText\(c\.size\)\+' files:/);
+  assert.doesNotMatch(html, /<div class="row"/);
+  // Visible focus style ships with the report.
+  assert.match(html, /\.row:focus-visible\{outline:2px solid var\(--accent\)/);
+});

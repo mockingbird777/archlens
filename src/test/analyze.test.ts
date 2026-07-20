@@ -26,10 +26,16 @@ test('reporters create portable, useful output', async () => {
   assert.match(html, /Fixture &lt;\/title&gt;&lt;script&gt;bad\(\)&lt;\/script&gt;/);
   assert.match(html, /application\/json/);
   assert.match(html, /Local-first/);
+  assert.match(
+    html,
+    /<a href="https:\/\/github\.com\/mockingbird777\/archlens" target="_blank" rel="noopener noreferrer">Explore ArchLens on GitHub ↗<\/a>/,
+  );
   assert.doesNotMatch(html, /<script>globalThis\.compromised/);
   assert.match(html, /\\u003c\/script\\u003e/);
   assert.doesNotMatch(html, new RegExp(fixture.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   assert.doesNotMatch(html, /<script[^>]+src=/);
+  assert.doesNotMatch(html, /<(?:img|link|iframe)[^>]+(?:src|href)=["']https?:\/\//i);
+  assert.doesNotMatch(html, /(?:fetch\s*\(|XMLHttpRequest|sendBeacon)/);
   assert.match(mermaid, /flowchart LR/);
   assert.match(mermaid, /src\/a\.ts/);
 });

@@ -24,6 +24,16 @@ test('reporters create portable, useful output', async () => {
   const html = renderHtml(result, 'Fixture </title><script>bad()</script>');
   const mermaid = renderMermaid(result);
   assert.match(html, /Fixture &lt;\/title&gt;&lt;script&gt;bad\(\)&lt;\/script&gt;/);
+  const escapedPageTitle = 'Fixture &lt;/title&gt;&lt;script&gt;bad()&lt;/script&gt; · ArchLens';
+  const description = 'Interactive, local-first repository intelligence for dependencies, cycles, and change-risk hotspots.';
+  assert.ok(html.includes(`<meta name="description" content="${description}">`));
+  assert.ok(html.includes('<meta property="og:type" content="website">'));
+  assert.ok(html.includes(`<meta property="og:title" content="${escapedPageTitle}">`));
+  assert.ok(html.includes(`<meta property="og:description" content="${description}">`));
+  assert.ok(html.includes('<meta name="twitter:card" content="summary">'));
+  assert.ok(html.includes(`<meta name="twitter:title" content="${escapedPageTitle}">`));
+  assert.ok(html.includes(`<meta name="twitter:description" content="${description}">`));
+  assert.doesNotMatch(html, /(?:property|name)="og:image"/);
   assert.match(html, /application\/json/);
   assert.match(html, /Local-first/);
   assert.match(

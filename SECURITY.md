@@ -6,7 +6,7 @@ Until ArchLens 1.0, security fixes are released on the newest minor version only
 
 | Version | Supported |
 | --- | --- |
-| 0.1.x | Yes |
+| 0.2.x | Yes |
 | Earlier | No |
 
 ## Reporting a vulnerability

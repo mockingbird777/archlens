@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="title desc">
+  <title id="title">ArchLens social preview</title>
+  <desc id="desc">ArchLens maps repository dependencies, cycles, and hotspots into a local interactive report.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#080b12"/><stop offset=".58" stop-color="#11172b"/><stop offset="1" stop-color="#11302f"/></linearGradient>
+    <radialGradient id="glow"><stop stop-color="#4de2c5" stop-opacity=".28"/><stop offset="1" stop-color="#4de2c5" stop-opacity="0"/></radialGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="12" stdDeviation="16" flood-opacity=".35"/></filter>
+  </defs>
+  <rect width="1280" height="640" fill="url(#bg)"/>
+  <circle cx="1070" cy="210" r="350" fill="url(#glow)"/>
+  <g opacity=".10" stroke="#b9c3ff"><path d="M0 80H1280M0 160H1280M0 240H1280M0 320H1280M0 400H1280M0 480H1280M0 560H1280M80 0V640M160 0V640M240 0V640M320 0V640M400 0V640M480 0V640M560 0V640M640 0V640M720 0V640M800 0V640M880 0V640M960 0V640M1040 0V640M1120 0V640M1200 0V640"/></g>
+  <g font-family="Inter,Segoe UI,sans-serif">
+    <g transform="translate(72 70)"><rect width="48" height="48" rx="14" fill="#4de2c51a" stroke="#4de2c588"/><text x="24" y="33" fill="#4de2c5" text-anchor="middle" font-size="24" font-weight="800">◈</text><text x="65" y="34" fill="#4de2c5" font-size="18" font-weight="750" letter-spacing="3">ARCHLENS</text></g>
+    <text x="72" y="228" fill="#f2f5ff" font-size="62" font-weight="760" letter-spacing="-3">See the architecture</text>
+    <text x="72" y="296" fill="#f2f5ff" font-size="62" font-weight="760" letter-spacing="-3">inside your repository.</text>
+    <text x="76" y="352" fill="#a7b2c5" font-size="23">Dependencies · circular groups · change-risk hotspots</text>
+    <g transform="translate(72 494)" font-size="14" font-weight="700" letter-spacing="1.3"><rect width="135" height="42" rx="21" fill="#4de2c514" stroke="#4de2c566"/><text x="67.5" y="27" fill="#4de2c5" text-anchor="middle">LOCAL-FIRST</text><rect x="149" width="195" height="42" rx="21" fill="#7c8cff14" stroke="#7c8cff66"/><text x="246.5" y="27" fill="#aab3ff" text-anchor="middle">OFFLINE HTML REPORT</text><rect x="358" width="232" height="42" rx="21" fill="#ffffff08" stroke="#71809a66"/><text x="474" y="27" fill="#c1cada" text-anchor="middle">ZERO RUNTIME DEPS</text></g>
+  </g>
+  <g transform="translate(745 104)" filter="url(#shadow)">
+    <rect width="460" height="420" rx="26" fill="#0c111bcc" stroke="#344159"/>
+    <g fill="none" stroke-linecap="round"><path d="M72 105L196 67L347 112L387 236L288 335L130 307L72 105" stroke="#66738f" stroke-width="2"/><path d="M72 105L288 335M196 67L130 307M347 112L130 307M196 67L387 236" stroke="#3a465e" stroke-width="2"/><path d="M196 67L288 335L387 236" stroke="#ff5d7d" stroke-width="4"/></g>
+    <g fill="#0c111b" stroke-width="5"><circle cx="72" cy="105" r="15" stroke="#f7df1e"/><circle cx="196" cy="67" r="20" stroke="#5ea7e0"/><circle cx="347" cy="112" r="16" stroke="#ffd343"/><circle cx="387" cy="236" r="25" stroke="#ff5d7d"/><circle cx="288" cy="335" r="20" stroke="#ff5d7d"/><circle cx="130" cy="307" r="17" stroke="#5dc9e2"/></g>
+    <g font-family="ui-monospace,SFMono-Regular,monospace" fill="#d0d8e6" font-size="13"><text x="38" y="81">router.ts</text><text x="165" y="35">service.ts</text><text x="321" y="82">models.py</text><text x="350" y="278">auth.ts</text><text x="251" y="377">session.ts</text><text x="86" y="346">main.go</text></g>
+  </g>
+</svg>

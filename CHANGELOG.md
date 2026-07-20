@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format is based on 
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-07-20
+
+### Added
+
+- `--open` for generating an HTML architecture report and launching it in the default browser in one command.
+
+### Changed
+
+- Reworked the README first-run path around a copy-paste command and verifiable terminal output.
+
 ## [0.1.0] - 2026-07-19
 
 ### Added
@@ -18,5 +28,6 @@ All notable changes to this project are documented here. The format is based on 
 - Zero-runtime-dependency CLI and programmatic API for Node.js 20+.
 - Tests, polyglot fixtures, CI, security policy, contribution guide, and community templates.
 
-[Unreleased]: https://github.com/mockingbird777/archlens/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/mockingbird777/archlens/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/mockingbird777/archlens/releases/tag/v0.2.0
 [0.1.0]: https://github.com/mockingbird777/archlens/releases/tag/v0.1.0

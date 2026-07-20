@@ -1,6 +1,6 @@
 {
   "name": "archlens",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Local-first repository intelligence graphs from your terminal.",
   "type": "module",
   "bin": {
@@ -15,7 +15,8 @@
     }
   },
   "files": [
-    "assets",
+    "assets/banner.svg",
+    "assets/report-preview.svg",
     "bin",
     "dist",
     "!dist/test",

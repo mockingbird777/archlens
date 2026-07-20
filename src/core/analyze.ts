@@ -13,7 +13,7 @@ import { buildMetrics, findCycles } from './graph.js';
 import { resolveImport, type ResolutionContext } from './resolver.js';
 import { scanRepository } from './scanner.js';
 
-export const VERSION = '0.1.0';
+export const VERSION = '0.2.0';
 
 async function readGoModule(root: string): Promise<string | undefined> {
   try {

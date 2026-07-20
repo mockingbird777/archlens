@@ -1,4 +1,5 @@
 import { promises as fs } from 'node:fs';
+import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { analyzeRepository, VERSION } from './core/analyze.js';
 import { renderReport, type ReportFormat } from './reporters/index.js';
@@ -13,6 +14,7 @@ interface CliOptions {
   exclude: string[];
   maxFiles: number;
   title?: string;
+  open: boolean;
   quiet: boolean;
   help: boolean;
   version: boolean;
@@ -33,12 +35,14 @@ Options
       --no-gitignore     Do not read .gitignore files
       --max-files <n>    Safety limit (default: 20000)
       --title <text>     Custom HTML report title
+      --open             Open the generated HTML report
   -q, --quiet            Suppress progress and summary
   -h, --help             Show this help
   -v, --version          Show the version
 
 Examples
   archlens .
+  archlens . --open
   archlens ./services/api --format json --stdout
   archlens . --exclude '**/*.test.ts' --output architecture.html
 `;
@@ -60,6 +64,7 @@ export function parseCliArgs(args: readonly string[]): CliOptions {
   const exclude: string[] = [];
   let maxFiles = 20_000;
   let title: string | undefined;
+  let open = false;
   let quiet = false;
   let help = false;
   let version = false;
@@ -75,6 +80,7 @@ export function parseCliArgs(args: readonly string[]): CliOptions {
     if (argument === '-h' || argument === '--help') help = true;
     else if (argument === '-v' || argument === '--version') version = true;
     else if (argument === '-q' || argument === '--quiet') quiet = true;
+    else if (argument === '--open') open = true;
     else if (argument === '--stdout') stdout = true;
     else if (argument === '--no-gitignore') useGitignore = false;
     else if (argument === '-f' || argument === '--format') {
@@ -111,10 +117,24 @@ export function parseCliArgs(args: readonly string[]): CliOptions {
   if (stdout && output !== undefined && output !== '-') {
     throw new Error('--stdout cannot be combined with --output unless the output is "-".');
   }
-  const result: CliOptions = { root, format, stdout, useGitignore, include, exclude, maxFiles, quiet, help, version };
+  if (open && (stdout || output === '-')) throw new Error('--open cannot be used when the report is written to stdout.');
+  if (open && format !== 'html') throw new Error('--open is only available for HTML reports.');
+  const result: CliOptions = { root, format, stdout, useGitignore, include, exclude, maxFiles, open, quiet, help, version };
   if (output !== undefined) result.output = output;
   if (title !== undefined) result.title = title;
   return result;
+}
+
+async function openInBrowser(file: string): Promise<void> {
+  const command = process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'explorer.exe' : 'xdg-open';
+  await new Promise<void>((resolve, reject) => {
+    const child = spawn(command, [file], { detached: true, stdio: 'ignore' });
+    child.once('error', reject);
+    child.once('spawn', () => {
+      child.unref();
+      resolve();
+    });
+  });
 }
 
 function defaultOutput(format: ReportFormat): string {
@@ -153,6 +173,15 @@ export async function run(args: readonly string[]): Promise<void> {
       process.stderr.write(`✓ ${result.summary.files} files · ${result.summary.dependencies} edges · ${result.summary.cycles} cycles\n`);
       process.stderr.write(`  Report: ${outputPath}\n`);
       if (result.warnings.length > 0) process.stderr.write(`  ${result.warnings.length} scan warning(s) recorded in the report.\n`);
+    }
+    if (options.open) {
+      try {
+        await openInBrowser(outputPath);
+        if (!options.quiet) process.stderr.write('  Opened in your default browser.\n');
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        process.stderr.write(`  Could not open the browser automatically: ${message}\n`);
+      }
     }
   }
 }

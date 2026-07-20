@@ -15,6 +15,21 @@ No account. No upload. No background service. No runtime dependencies.
 
 <p align="center"><a href="https://mockingbird777.github.io/archlens/"><strong>Explore the live interactive report →</strong></a></p>
 
+### Map this repository in one command
+
+Run ArchLens from any source repository. It writes one offline HTML file and opens it in your browser:
+
+```bash
+npx --yes github:mockingbird777/archlens . --open
+```
+
+```text
+◈ ArchLens scanning /path/to/repository
+✓ 30 files · 52 edges · 2 cycles
+  Report: /path/to/repository/archlens-report.html
+  Opened in your default browser.
+```
+
 <div align="center">
   <img src="assets/report-preview.svg" alt="Preview of the ArchLens interactive HTML report" width="100%" />
 </div>
@@ -24,7 +39,7 @@ No account. No upload. No background service. No runtime dependencies.
 Requires [Node.js 20 or newer](https://nodejs.org/).
 
 ```bash
-# Run the latest code directly from GitHub (the package is not on npm yet)
+# Generate a report without opening it
 npx --yes github:mockingbird777/archlens .
 
 # Open the generated report
@@ -100,6 +115,7 @@ archlens [path] [options]
     --no-gitignore     Do not read .gitignore files
     --max-files <n>    Safety limit (default: 20000)
     --title <text>     Custom HTML report title
+    --open             Open the generated HTML report
 -q, --quiet            Suppress progress and summary
 -h, --help             Show help
 -v, --version          Show the version
@@ -201,7 +217,7 @@ ArchLens favors predictable zero-configuration analysis over compiler-level comp
 
 ## Contributing
 
-Issues and pull requests are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md), follow the [Code of Conduct](CODE_OF_CONDUCT.md), and run `npm test` before submitting a change. Good first contributions include focused parser fixtures, resolver edge cases, report accessibility, and performance profiles from large public repositories.
+Issues and pull requests are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md), follow the [Code of Conduct](CODE_OF_CONDUCT.md), and run `npm test` before submitting a change. Good first contributions include focused parser fixtures, resolver edge cases, report accessibility, and performance profiles from large public repositories. Not ready to code? A small public repository that ArchLens misreads is an equally valuable bug report.
 
 ## License
 

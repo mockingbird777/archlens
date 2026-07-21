@@ -19,6 +19,22 @@ test('JavaScript parser finds static, dynamic, export, and require imports', () 
   ]);
 });
 
+test('JavaScript parser records a type-only namespace import once', () => {
+  const imports = parseJavaScriptImports(`
+    import type * as Models from './models.js';
+    import * as Utils from './utils.js';
+    // import type * as Ignored from './comment.js';
+  `);
+  // Exactly one edge for the type-only namespace import, with the right
+  // specifier and no duplicate; the plain namespace import is unaffected and
+  // the commented form is ignored.
+  assert.deepEqual(imports.map((item) => item.specifier), ['./models.js', './utils.js']);
+  const models = imports.filter((item) => item.specifier === './models.js');
+  assert.equal(models.length, 1);
+  assert.equal(models[0]?.kind, 'import');
+  assert.equal(models[0]?.line, 2);
+});
+
 test('JavaScript parser ignores import-like text inside strings and templates', () => {
   const imports = parseJavaScriptImports(`
     const example = "import fake from './fake.js'";

@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format is based on 
 
 ## [Unreleased]
 
+### Added
+
+- Regression test locking in that a type-only namespace import (`import type * as X from '...'`) is recorded as exactly one import edge.
+
 ## [0.2.0] - 2026-07-20
 
 ### Added

@@ -6,12 +6,14 @@ test('CLI parser accepts repeatable filters and explicit output', () => {
   const options = parseCliArgs([
     './project', '--format', 'json', '--output', 'result.json',
     '--include', 'src/**', '--exclude', '**/*.test.ts', '--max-files', '500',
+    '--impact', 'src/config.ts', '--impact', 'packages/core',
   ]);
   assert.equal(options.root, './project');
   assert.equal(options.format, 'json');
   assert.equal(options.output, 'result.json');
   assert.deepEqual(options.include, ['src/**']);
   assert.deepEqual(options.exclude, ['**/*.test.ts']);
+  assert.deepEqual(options.impact, ['src/config.ts', 'packages/core']);
   assert.equal(options.maxFiles, 500);
   assert.equal(options.open, false);
 });
@@ -23,6 +25,7 @@ test('CLI parser returns friendly errors for invalid input', () => {
   assert.throws(() => parseCliArgs(['--stdout', '--output', 'report.json']), /cannot be combined/);
   assert.throws(() => parseCliArgs(['--open', '--stdout']), /cannot be used/);
   assert.throws(() => parseCliArgs(['--open', '--format', 'json']), /only available for HTML/);
+  assert.throws(() => parseCliArgs(['--impact']), /requires a value/);
 });
 
 test('CLI parser treats --output - as stdout', () => {

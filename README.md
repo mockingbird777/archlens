@@ -9,7 +9,7 @@
   <img alt="zero runtime dependencies" src="https://img.shields.io/badge/runtime_dependencies-0-7c8cff?style=flat-square" />
 </div>
 
-**ArchLens turns a source tree into an architecture map you can actually use.** One command finds local dependencies, circular dependency groups, and change-risk hotspots across JavaScript, TypeScript, Python, and Go—then produces a private, self-contained interactive report.
+**ArchLens turns a source tree into an architecture map you can actually use.** One command finds local dependencies, circular dependency groups, change-risk hotspots, and the potential blast radius of a changed file across JavaScript, TypeScript, Python, and Go—then produces a private, self-contained interactive report.
 
 No account. No upload. No background service. No runtime dependencies.
 
@@ -42,6 +42,9 @@ Requires [Node.js 20 or newer](https://nodejs.org/).
 # Generate a report without opening it
 npx --yes github:mockingbird777/archlens .
 
+# Trace every importer that could be affected by a change
+npx --yes github:mockingbird777/archlens . --impact src/config.ts --open
+
 # Open the generated report
 open archlens-report.html       # macOS
 xdg-open archlens-report.html  # Linux
@@ -62,6 +65,7 @@ Dependency graphs are often either too shallow to guide a refactor or locked beh
 
 - **Find cycles before they harden.** Tarjan's strongly connected components algorithm identifies complete circular dependency groups, including self-loops.
 - **Prioritize risky files.** A transparent hotspot score combines unique fan-in, unique fan-out, file size, and cycle membership.
+- **Preview a change's blast radius.** Reverse dependency tracing shows potentially affected importers, their distance, and a shortest witness path; repeat `--impact` for multi-file changes.
 - **Understand polyglot repositories.** Analyze JS/TS ESM, CommonJS, Python imports, and local Go module imports in one pass.
 - **Share a report, not your source.** The HTML report contains graph metadata only and makes no network requests.
 - **Automate architecture checks.** Stable JSON and Mermaid output are easy to consume in CI, pull requests, or docs.
@@ -75,6 +79,7 @@ The default report is a single portable file with:
 
 - live file search and language filters;
 - cycle-only and hotspot-only focus modes;
+- an impact-only focus mode with changed-file and affected-file markers;
 - zoomable and pannable dependency graph;
 - clickable node details with LOC, fan-in, fan-out, and cycle membership;
 - hotspot ranking, cycle summaries, and an embedded machine-readable dataset;
@@ -92,7 +97,7 @@ Use the versioned schema for scripts and CI:
 npx --yes github:mockingbird777/archlens . --format json --stdout > architecture.json
 ```
 
-The document includes `meta`, `summary`, `nodes`, `edges`, `unresolvedImports`, `cycles`, `hotspots`, and non-fatal `warnings`. Paths are repository-relative; source contents and absolute paths are never emitted.
+The document includes `meta`, `summary`, `nodes`, `edges`, `unresolvedImports`, `cycles`, `hotspots`, optional `impact`, and non-fatal `warnings`. Impact results include deterministic shortest witness paths from each changed file to a potential importer. Paths are repository-relative; source contents and absolute paths are never emitted.
 
 ### Mermaid
 
@@ -112,6 +117,7 @@ archlens [path] [options]
     --stdout           Write the report to stdout
     --include <glob>   Only scan matching files (repeatable)
     --exclude <glob>   Ignore matching paths (repeatable)
+    --impact <path>    Trace potential importers of a changed path (repeatable)
     --no-gitignore     Do not read .gitignore files
     --max-files <n>    Safety limit (default: 20000)
     --title <text>     Custom HTML report title
@@ -127,6 +133,7 @@ Examples:
 npx --yes github:mockingbird777/archlens . --exclude '**/*.test.ts' --exclude 'generated/**'
 npx --yes github:mockingbird777/archlens . --include 'packages/**' --max-files 50000
 npx --yes github:mockingbird777/archlens services/api -f json -o artifacts/api-architecture.json
+npx --yes github:mockingbird777/archlens . --impact packages/core --impact src/config.ts --open
 ```
 
 ArchLens always skips common generated or heavyweight directories such as `.git`, `node_modules`, `dist`, `build`, `coverage`, `vendor`, virtual environments, and language caches. It also evaluates common `.gitignore` rules, including wildcards, anchored paths, directory rules, and negation.
@@ -150,8 +157,10 @@ flowchart LR
   C --> D[Dependency graph]
   D --> E[Tarjan SCC cycles]
   D --> F[Hotspot metrics]
+  D --> H[Reverse impact tracing]
   E --> G[HTML / JSON / Mermaid]
   F --> G
+  H --> G
 ```
 
 The implementation is intentionally layered:
@@ -182,6 +191,8 @@ const result = await analyzeRepository({
 
 console.log(result.cycles);
 ```
+
+`impact` paths can name a scanned source file or a directory. ArchLens follows local import edges in reverse, keeps cycles bounded, and selects a deterministic shortest witness when several changed files can reach the same importer. This is a structural “may be affected” signal—not a claim that every reachable file must change.
 
 ## Hotspot score
 

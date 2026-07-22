@@ -7,6 +7,7 @@ All notable changes to this project are documented here. The format is based on 
 ### Added
 
 - Regression test locking in that a type-only namespace import (`import type * as X from '...'`) is recorded as exactly one import edge.
+- Change-impact tracing with repeatable `--impact <file-or-directory>` flags, deterministic shortest witness paths, unmatched-path disclosure, and dedicated HTML, JSON, and Mermaid views.
 
 ## [0.2.0] - 2026-07-20
 

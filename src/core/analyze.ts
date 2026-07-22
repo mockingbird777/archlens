@@ -10,6 +10,7 @@ import type {
   UnresolvedImport,
 } from '../types.js';
 import { buildMetrics, findCycles } from './graph.js';
+import { traceChangeImpact } from './impact.js';
 import { resolveImport, type ResolutionContext } from './resolver.js';
 import { scanRepository } from './scanner.js';
 
@@ -80,7 +81,7 @@ export async function analyzeRepository(options: AnalyzeOptions): Promise<Analys
   const languages: Partial<Record<Language, number>> = {};
   for (const file of scan.files) languages[file.language] = (languages[file.language] ?? 0) + 1;
 
-  return {
+  const result: AnalysisResult = {
     meta: {
       schemaVersion: 1,
       tool: 'archlens',
@@ -105,4 +106,11 @@ export async function analyzeRepository(options: AnalyzeOptions): Promise<Analys
     hotspots,
     warnings: scan.warnings,
   };
+  if (options.impact && options.impact.length > 0) {
+    result.impact = traceChangeImpact(root, nodes.map((node) => node.id), edges, options.impact);
+    for (const unmatched of result.impact.unmatched) {
+      result.warnings.push(`Impact path did not match a scanned source file or directory: ${unmatched}`);
+    }
+  }
+  return result;
 }

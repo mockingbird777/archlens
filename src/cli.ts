@@ -12,6 +12,7 @@ interface CliOptions {
   useGitignore: boolean;
   include: string[];
   exclude: string[];
+  impact: string[];
   maxFiles: number;
   title?: string;
   open: boolean;
@@ -32,6 +33,7 @@ Options
       --stdout           Write the report to stdout
       --include <glob>   Only scan matching files (repeatable)
       --exclude <glob>   Ignore matching paths (repeatable)
+      --impact <path>    Trace potential importers of a changed path (repeatable)
       --no-gitignore     Do not read .gitignore files
       --max-files <n>    Safety limit (default: 20000)
       --title <text>     Custom HTML report title
@@ -44,6 +46,7 @@ Examples
   archlens .
   archlens . --open
   archlens ./services/api --format json --stdout
+  archlens . --impact src/config.ts --impact packages/core
   archlens . --exclude '**/*.test.ts' --output architecture.html
 `;
 
@@ -62,6 +65,7 @@ export function parseCliArgs(args: readonly string[]): CliOptions {
   let useGitignore = true;
   const include: string[] = [];
   const exclude: string[] = [];
+  const impact: string[] = [];
   let maxFiles = 20_000;
   let title: string | undefined;
   let open = false;
@@ -97,6 +101,9 @@ export function parseCliArgs(args: readonly string[]): CliOptions {
     } else if (argument === '--exclude') {
       exclude.push(takeValue(args, index, argument));
       index += 1;
+    } else if (argument === '--impact') {
+      impact.push(takeValue(args, index, argument));
+      index += 1;
     } else if (argument === '--max-files') {
       const value = takeValue(args, index, argument);
       maxFiles = Number(value);
@@ -119,7 +126,7 @@ export function parseCliArgs(args: readonly string[]): CliOptions {
   }
   if (open && (stdout || output === '-')) throw new Error('--open cannot be used when the report is written to stdout.');
   if (open && format !== 'html') throw new Error('--open is only available for HTML reports.');
-  const result: CliOptions = { root, format, stdout, useGitignore, include, exclude, maxFiles, open, quiet, help, version };
+  const result: CliOptions = { root, format, stdout, useGitignore, include, exclude, impact, maxFiles, open, quiet, help, version };
   if (output !== undefined) result.output = output;
   if (title !== undefined) result.title = title;
   return result;
@@ -160,6 +167,7 @@ export async function run(args: readonly string[]): Promise<void> {
     useGitignore: options.useGitignore,
     include: options.include,
     exclude: options.exclude,
+    impact: options.impact,
     maxFiles: options.maxFiles,
   });
   const content = renderReport(result, options.format, options.title);
@@ -171,6 +179,9 @@ export async function run(args: readonly string[]): Promise<void> {
     await fs.writeFile(outputPath, content, 'utf8');
     if (!options.quiet) {
       process.stderr.write(`✓ ${result.summary.files} files · ${result.summary.dependencies} edges · ${result.summary.cycles} cycles\n`);
+      if (result.impact) {
+        process.stderr.write(`  Potential impact: ${result.impact.affectedFiles} importer(s) from ${result.impact.seeds.length} changed file(s)\n`);
+      }
       process.stderr.write(`  Report: ${outputPath}\n`);
       if (result.warnings.length > 0) process.stderr.write(`  ${result.warnings.length} scan warning(s) recorded in the report.\n`);
     }

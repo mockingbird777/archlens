@@ -18,6 +18,22 @@ test('analyzes a polyglot repository and respects .gitignore', async () => {
   assert.ok(result.cycles.some((cycle) => cycle.nodes.includes('pyutil/__init__.py') && cycle.nodes.includes('pyutil/worker.py')));
 });
 
+test('adds an explicit change-impact layer without reading source into the report', async () => {
+  const result = await analyzeRepository({ root: fixture, impact: ['src/b.ts', 'does-not-exist.ts'] });
+  assert.deepEqual(result.impact?.seeds, ['src/b.ts']);
+  assert.deepEqual(result.impact?.unmatched, ['does-not-exist.ts']);
+  assert.ok(result.impact?.nodes.some((node) => node.id === 'src/a.ts' && node.distance === 1));
+  assert.ok(result.warnings.some((warning) => warning.includes('does-not-exist.ts')));
+  const html = renderHtml(result, 'Impact fixture');
+  const mermaid = renderMermaid(result);
+  assert.match(html, /Potential change impact/);
+  assert.match(html, /Impact only/);
+  assert.match(html, /potentially affected/);
+  assert.match(mermaid, /Potential change impact:/);
+  assert.match(mermaid, /impactSeed/);
+  assert.match(mermaid, /impactAffected/);
+});
+
 test('reporters create portable, useful output', async () => {
   const result = await analyzeRepository({ root: fixture });
   result.warnings.push('</script><script>globalThis.compromised = true</script>');
@@ -25,7 +41,7 @@ test('reporters create portable, useful output', async () => {
   const mermaid = renderMermaid(result);
   assert.match(html, /Fixture &lt;\/title&gt;&lt;script&gt;bad\(\)&lt;\/script&gt;/);
   const escapedPageTitle = 'Fixture &lt;/title&gt;&lt;script&gt;bad()&lt;/script&gt; · ArchLens';
-  const description = 'Interactive, local-first repository intelligence for dependencies, cycles, and change-risk hotspots.';
+  const description = 'Interactive, local-first repository intelligence for dependencies, cycles, change-risk hotspots, and blast radius.';
   assert.ok(html.includes(`<meta name="description" content="${description}">`));
   assert.ok(html.includes('<meta property="og:type" content="website">'));
   assert.ok(html.includes(`<meta property="og:title" content="${escapedPageTitle}">`));

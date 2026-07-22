@@ -87,6 +87,22 @@ export interface AnalysisMeta {
   durationMs: number;
 }
 
+export interface ImpactNode {
+  id: string;
+  distance: number;
+  changedFile: string;
+  witnessPath: string[];
+}
+
+export interface ChangeImpact {
+  requested: string[];
+  seeds: string[];
+  unmatched: string[];
+  affectedFiles: number;
+  maxDistance: number;
+  nodes: ImpactNode[];
+}
+
 export interface AnalysisResult {
   meta: AnalysisMeta;
   summary: AnalysisSummary;
@@ -96,6 +112,7 @@ export interface AnalysisResult {
   cycles: Cycle[];
   hotspots: Hotspot[];
   warnings: string[];
+  impact?: ChangeImpact;
 }
 
 export interface ScanOptions {
@@ -113,4 +130,5 @@ export interface ScanResult {
 
 export interface AnalyzeOptions extends Partial<Omit<ScanOptions, 'root'>> {
   root: string;
+  impact?: string[];
 }

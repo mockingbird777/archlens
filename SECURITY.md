@@ -6,7 +6,8 @@ Until ArchLens 1.0, security fixes are released on the newest minor version only
 
 | Version | Supported |
 | --- | --- |
-| 0.2.x | Yes |
+| 0.3.x | Yes |
+| 0.2.x | No |
 | Earlier | No |
 
 ## Reporting a vulnerability
@@ -24,7 +25,7 @@ ArchLens reads untrusted repository trees and writes a report. It is designed to
 - skip symbolic links during recursive walking;
 - avoid network requests and telemetry;
 - emit only repository-relative paths, metadata, and import specifiers;
-- escape repository-derived values in HTML and Mermaid output;
+- escape repository-derived values in HTML and neutralize C0/C1 terminal controls in Mermaid output;
 - cap scanned file count by default.
 
 Repository paths and import specifiers can still reveal sensitive architecture. Treat generated reports as source-adjacent artifacts and review them before sharing. Run ArchLens with the same filesystem privileges you would grant any local developer tool.

@@ -92,6 +92,15 @@ export interface ImpactNode {
   distance: number;
   changedFile: string;
   witnessPath: string[];
+  /** Present only when the complete witness was omitted by a safety limit. */
+  witnessPathOmitted?: true;
+}
+
+export interface ImpactWitnessSummary {
+  maxNodesPerPath: number;
+  maxTotalNodes: number;
+  materializedNodes: number;
+  omittedPaths: number;
 }
 
 export interface ChangeImpact {
@@ -101,6 +110,8 @@ export interface ChangeImpact {
   affectedFiles: number;
   maxDistance: number;
   nodes: ImpactNode[];
+  /** Materialization limits and their effect on this result. */
+  witnesses?: ImpactWitnessSummary;
 }
 
 export interface AnalysisResult {

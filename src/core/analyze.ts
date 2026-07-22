@@ -111,6 +111,12 @@ export async function analyzeRepository(options: AnalyzeOptions): Promise<Analys
     for (const unmatched of result.impact.unmatched) {
       result.warnings.push(`Impact path did not match a scanned source file or directory: ${unmatched}`);
     }
+    const witnessSummary = result.impact.witnesses;
+    if (witnessSummary && witnessSummary.omittedPaths > 0) {
+      result.warnings.push(
+        `Impact witness paths were omitted for ${witnessSummary.omittedPaths} node(s) because materialization is limited to ${witnessSummary.maxNodesPerPath} nodes per path and ${witnessSummary.maxTotalNodes} path nodes per report. Distances, changed-file origins, and affected-file counts remain complete.`,
+      );
+    }
   }
   return result;
 }

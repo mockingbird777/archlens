@@ -1,10 +1,12 @@
+import { sanitizeTerminalLine } from '../core/terminal.js';
 import type { AnalysisResult, Language } from '../types.js';
 
 function escapeLabel(value: string): string {
-  return value
+  return sanitizeTerminalLine(value)
+    // Mermaid controls its own line structure. Untrusted paths and import
+    // specifiers must stay on one inert terminal line, including when stdout
+    // is attached to a terminal that implements ANSI/OSC control sequences.
     .replaceAll('\\', '/')
-    .replaceAll('\r', ' ')
-    .replaceAll('\n', ' ')
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')

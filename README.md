@@ -65,7 +65,7 @@ Dependency graphs are often either too shallow to guide a refactor or locked beh
 
 - **Find cycles before they harden.** Tarjan's strongly connected components algorithm identifies complete circular dependency groups, including self-loops.
 - **Prioritize risky files.** A transparent hotspot score combines unique fan-in, unique fan-out, file size, and cycle membership.
-- **Preview a change's blast radius.** Reverse dependency tracing shows potentially affected importers, their distance, and a shortest witness path; repeat `--impact` for multi-file changes.
+- **Preview a change's blast radius.** Reverse dependency tracing shows potentially affected importers, their distance, and a shortest witness path when it fits the documented report budget; repeat `--impact` for multi-file changes.
 - **Understand polyglot repositories.** Analyze JS/TS ESM, CommonJS, Python imports, and local Go module imports in one pass.
 - **Share a report, not your source.** The HTML report contains graph metadata only and makes no network requests.
 - **Automate architecture checks.** Stable JSON and Mermaid output are easy to consume in CI, pull requests, or docs.
@@ -97,7 +97,9 @@ Use the versioned schema for scripts and CI:
 npx --yes github:mockingbird777/archlens . --format json --stdout > architecture.json
 ```
 
-The document includes `meta`, `summary`, `nodes`, `edges`, `unresolvedImports`, `cycles`, `hotspots`, optional `impact`, and non-fatal `warnings`. Impact results include deterministic shortest witness paths from each changed file to a potential importer. Paths are repository-relative; source contents and absolute paths are never emitted.
+The document includes `meta`, `summary`, `nodes`, `edges`, `unresolvedImports`, `cycles`, `hotspots`, optional `impact`, and non-fatal `warnings`. Impact results always include complete reachability, distance, and changed-file origin data; deterministic shortest witness paths are included within the materialization budget described below. Paths are repository-relative; source contents and absolute paths are never emitted.
+
+`impact.witnesses` records the witness materialization budget and its use. Complete paths are capped at 256 nodes each and 40,000 path nodes across a report so a deep or highly connected graph cannot create quadratic output. Reachability, distances, changed-file origins, and affected-file counts remain complete. If a path exceeds either budget, its `witnessPath` is `[]`, `witnessPathOmitted` is `true`, `impact.witnesses.omittedPaths` is incremented, and a top-level warning explains the limit. HTML displays the warning and omission marker; the CLI mirrors warnings to stderr unless `--quiet` is set.
 
 ### Mermaid
 
@@ -192,7 +194,7 @@ const result = await analyzeRepository({
 console.log(result.cycles);
 ```
 
-`impact` paths can name a scanned source file or a directory. ArchLens follows local import edges in reverse, keeps cycles bounded, and selects a deterministic shortest witness when several changed files can reach the same importer. This is a structural “may be affected” signal—not a claim that every reachable file must change.
+`impact` paths can name a scanned source file or a directory. ArchLens follows local import edges in reverse, keeps cycles bounded, and deterministically selects a shortest predecessor chain when several changed files can reach the same importer. Traversal stores those predecessors rather than copying whole paths; bounded witness materialization affects only the displayed path, never the reachability result. This is a structural “may be affected” signal—not a claim that every reachable file must change.
 
 ## Hotspot score
 

@@ -1,4 +1,7 @@
 import assert from 'node:assert/strict';
+import { promises as fs } from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { analyzeRepository } from '../core/analyze.js';
@@ -58,12 +61,75 @@ test('reporters create portable, useful output', async () => {
   );
   assert.doesNotMatch(html, /<script>globalThis\.compromised/);
   assert.match(html, /\\u003c\/script\\u003e/);
+  assert.match(html, /Analysis warnings/);
+  assert.match(html, /&lt;\/script&gt;&lt;script&gt;globalThis\.compromised = true&lt;\/script&gt;/);
   assert.doesNotMatch(html, new RegExp(fixture.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   assert.doesNotMatch(html, /<script[^>]+src=/);
   assert.doesNotMatch(html, /<(?:img|link|iframe)[^>]+(?:src|href)=["']https?:\/\//i);
   assert.doesNotMatch(html, /(?:fetch\s*\(|XMLHttpRequest|sendBeacon)/);
   assert.match(mermaid, /flowchart LR/);
   assert.match(mermaid, /src\/a\.ts/);
+});
+
+test('Mermaid keeps untrusted paths and specifiers on inert terminal lines', async () => {
+  const result = await analyzeRepository({ root: fixture });
+  const node = result.nodes[0];
+  const graphEdge = result.edges[0];
+  assert.ok(node);
+  assert.ok(graphEdge);
+  const originalId = node.id;
+  const osc = '\u001b]52;c;Y29weQ==\u0007';
+  node.id = `unsafe/${osc}\u009d0;title\u009c\r\ninjected.ts`;
+  for (const candidate of result.edges) {
+    if (candidate.source === originalId) candidate.source = node.id;
+    if (candidate.target === originalId) candidate.target = node.id;
+  }
+  graphEdge.specifier = `./dependency${osc}\u001b[31m\u009b32m\nnext`;
+
+  const mermaid = renderMermaid(result);
+  assert.doesNotMatch(mermaid, /[\u0000-\u0009\u000b-\u001f\u007f-\u009f]/);
+  assert.doesNotMatch(mermaid, /\u001b|\u0007|\u009b|\u009d/);
+  assert.match(mermaid, /injected\.ts/);
+  assert.match(mermaid, /dependency/);
+});
+
+test('records an explicit warning when impact witness paths are omitted', async () => {
+  const temporaryRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'archlens-witness-limit-'));
+  try {
+    const fileIds = Array.from({ length: 258 }, (_, index) => `n${String(index).padStart(3, '0')}.ts`);
+    await Promise.all(fileIds.map((id, index) => {
+      const previous = fileIds[index - 1];
+      const content = previous
+        ? `import './${previous.replace(/\.ts$/, '.js')}';\nexport const value${index} = ${index};\n`
+        : 'export const value0 = 0;\n';
+      return fs.writeFile(path.join(temporaryRoot, id), content, 'utf8');
+    }));
+
+    const result = await analyzeRepository({
+      root: temporaryRoot,
+      impact: [fileIds[0] ?? ''],
+      useGitignore: false,
+      maxFiles: 300,
+    });
+    assert.equal(result.impact?.affectedFiles, 257);
+    assert.equal(result.impact?.maxDistance, 257);
+    assert.equal(result.impact?.witnesses?.omittedPaths, 2);
+    assert.ok(result.warnings.some((warning) => (
+      warning.includes('Impact witness paths were omitted for 2 node(s)')
+      && warning.includes('Distances, changed-file origins, and affected-file counts remain complete.')
+    )));
+    assert.ok(result.impact?.nodes.some((impactNode) => (
+      impactNode.distance === 256
+      && impactNode.witnessPathOmitted === true
+      && impactNode.witnessPath.length === 0
+    )));
+    const html = renderHtml(result, 'Witness limit fixture');
+    assert.match(html, /Analysis warnings/);
+    assert.match(html, /Impact witness paths were omitted for 2 node\(s\)/);
+    assert.match(html, /Omitted by report safety limit/);
+  } finally {
+    await fs.rm(temporaryRoot, { recursive: true, force: true });
+  }
 });
 
 test('hotspot and cycle rows render as keyboard-operable buttons', async () => {

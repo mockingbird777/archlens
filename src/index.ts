@@ -14,6 +14,7 @@ export type {
   GraphNode,
   Hotspot,
   ImpactNode,
+  ImpactWitnessSummary,
   Language,
   UnresolvedImport,
 } from './types.js';

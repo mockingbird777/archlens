@@ -2,6 +2,7 @@ import { promises as fs } from 'node:fs';
 import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { analyzeRepository, VERSION } from './core/analyze.js';
+import { sanitizeTerminalLine } from './core/terminal.js';
 import { renderReport, type ReportFormat } from './reporters/index.js';
 
 interface CliOptions {
@@ -150,6 +151,12 @@ function defaultOutput(format: ReportFormat): string {
   return 'archlens-report.html';
 }
 
+function writeWarnings(warnings: readonly string[]): void {
+  for (const warning of warnings) {
+    process.stderr.write(`  Warning: ${sanitizeTerminalLine(warning)}\n`);
+  }
+}
+
 export async function run(args: readonly string[]): Promise<void> {
   const options = parseCliArgs(args);
   if (options.help) {
@@ -173,6 +180,7 @@ export async function run(args: readonly string[]): Promise<void> {
   const content = renderReport(result, options.format, options.title);
   if (toStdout) {
     process.stdout.write(content);
+    if (!options.quiet) writeWarnings(result.warnings);
   } else {
     const outputPath = path.resolve(options.output ?? defaultOutput(options.format));
     await fs.mkdir(path.dirname(outputPath), { recursive: true });
@@ -183,7 +191,7 @@ export async function run(args: readonly string[]): Promise<void> {
         process.stderr.write(`  Potential impact: ${result.impact.affectedFiles} importer(s) from ${result.impact.seeds.length} changed file(s)\n`);
       }
       process.stderr.write(`  Report: ${outputPath}\n`);
-      if (result.warnings.length > 0) process.stderr.write(`  ${result.warnings.length} scan warning(s) recorded in the report.\n`);
+      writeWarnings(result.warnings);
     }
     if (options.open) {
       try {

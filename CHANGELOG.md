@@ -4,6 +4,11 @@ All notable changes to this project are documented here. The format is based on 
 
 ## [Unreleased]
 
+### Fixed
+
+- Replaced quadratic impact-path copying with predecessor traversal and bounded witness materialization, with explicit JSON metadata and warnings when a complete path is omitted.
+- Neutralized C0/C1 terminal control characters in repository-derived Mermaid labels and import specifiers.
+
 ## [0.3.0] - 2026-07-22
 
 ### Added

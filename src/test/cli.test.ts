@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { parseCliArgs } from '../cli.js';
+import { sanitizeTerminalLine } from '../core/terminal.js';
 
 test('CLI parser accepts repeatable filters and explicit output', () => {
   const options = parseCliArgs([
@@ -37,4 +38,11 @@ test('CLI parser supports opening a generated HTML report', () => {
   const options = parseCliArgs(['./project', '--open']);
   assert.equal(options.open, true);
   assert.equal(options.format, 'html');
+});
+
+test('terminal lines neutralize C0 and C1 controls without adding newlines', () => {
+  const sanitized = sanitizeTerminalLine('warning\u001b]52;c;Y29weQ==\u0007\u009dtitle\u009c\r\nnext');
+  assert.doesNotMatch(sanitized, /[\u0000-\u001f\u007f-\u009f]/);
+  assert.match(sanitized, /warning/);
+  assert.match(sanitized, /next/);
 });

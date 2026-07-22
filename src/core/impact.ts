@@ -1,6 +1,15 @@
 import path from 'node:path';
 import type { ChangeImpact, GraphEdge } from '../types.js';
 
+const MAX_WITNESS_NODES_PER_PATH = 256;
+const MAX_TOTAL_WITNESS_NODES = 40_000;
+
+interface TraversalState {
+  distance: number;
+  changedFile: string;
+  predecessor: string | null;
+}
+
 function toPosix(value: string): string {
   return value.replaceAll('\\', '/');
 }
@@ -18,6 +27,26 @@ function normalizeRequest(root: string, request: string): string {
 
 function uniqueSorted(values: Iterable<string>): string[] {
   return [...new Set(values)].sort((left, right) => left.localeCompare(right));
+}
+
+function materializeWitness(
+  id: string,
+  state: TraversalState,
+  best: ReadonlyMap<string, TraversalState>,
+): string[] {
+  const reversed: string[] = [];
+  let current: string | null = id;
+  while (current !== null) {
+    reversed.push(current);
+    const currentState = best.get(current);
+    if (!currentState) throw new Error(`Could not materialize impact witness for ${id}.`);
+    current = currentState.predecessor;
+  }
+  reversed.reverse();
+  if (reversed.length !== state.distance + 1 || reversed[0] !== state.changedFile) {
+    throw new Error(`Invalid impact predecessor chain for ${id}.`);
+  }
+  return reversed;
 }
 
 /**
@@ -57,10 +86,12 @@ export function traceChangeImpact(
     reverse.set(edge.target, importers);
   }
 
-  const best = new Map<string, { distance: number; changedFile: string; witnessPath: string[] }>();
+  // Traversal retains one predecessor per node. Copying complete paths while
+  // visiting a long chain would otherwise require quadratic memory.
+  const best = new Map<string, TraversalState>();
   const queue: string[] = [];
   for (const seed of sortedSeeds) {
-    best.set(seed, { distance: 0, changedFile: seed, witnessPath: [seed] });
+    best.set(seed, { distance: 0, changedFile: seed, predecessor: null });
     queue.push(seed);
   }
 
@@ -75,15 +106,35 @@ export function traceChangeImpact(
       best.set(importer, {
         distance: currentBest.distance + 1,
         changedFile: currentBest.changedFile,
-        witnessPath: [...currentBest.witnessPath, importer],
+        predecessor: current,
       });
       queue.push(importer);
     }
   }
 
-  const nodes = [...best.entries()]
-    .map(([id, value]) => ({ id, ...value }))
-    .sort((left, right) => left.distance - right.distance || left.id.localeCompare(right.id));
+  const ordered = [...best.entries()]
+    .sort((left, right) => left[1].distance - right[1].distance || left[0].localeCompare(right[0]));
+  let materializedNodes = 0;
+  let omittedPaths = 0;
+  const nodes = ordered.map(([id, state]) => {
+    const pathNodes = state.distance + 1;
+    if (
+      pathNodes > MAX_WITNESS_NODES_PER_PATH
+      || materializedNodes + pathNodes > MAX_TOTAL_WITNESS_NODES
+    ) {
+      omittedPaths += 1;
+      return {
+        id,
+        distance: state.distance,
+        changedFile: state.changedFile,
+        witnessPath: [],
+        witnessPathOmitted: true as const,
+      };
+    }
+    const witnessPath = materializeWitness(id, state, best);
+    materializedNodes += witnessPath.length;
+    return { id, distance: state.distance, changedFile: state.changedFile, witnessPath };
+  });
   return {
     requested,
     seeds: sortedSeeds,
@@ -91,5 +142,11 @@ export function traceChangeImpact(
     affectedFiles: Math.max(0, nodes.length - sortedSeeds.length),
     maxDistance: nodes.reduce((maximum, node) => Math.max(maximum, node.distance), 0),
     nodes,
+    witnesses: {
+      maxNodesPerPath: MAX_WITNESS_NODES_PER_PATH,
+      maxTotalNodes: MAX_TOTAL_WITNESS_NODES,
+      materializedNodes,
+      omittedPaths,
+    },
   };
 }

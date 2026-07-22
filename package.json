@@ -1,7 +1,7 @@
 {
   "name": "archlens",
-  "version": "0.2.0",
-  "description": "Local-first repository intelligence graphs from your terminal.",
+  "version": "0.3.0",
+  "description": "Local-first dependency graphs, change blast radius, cycles, and architecture hotspots.",
   "type": "module",
   "bin": {
     "archlens": "bin/archlens.js"
@@ -38,7 +38,8 @@
     "code-visualization",
     "circular-dependencies",
     "developer-tools",
-    "local-first"
+    "local-first",
+    "change-impact"
   ],
   "author": "ArchLens Contributors",
   "license": "MIT",
